@@ -22,7 +22,7 @@ def write_csv_export(
     ]
     if include_marginal:
         rows.extend(a for a in analyses if a.viability == ViabilityStatus.MARGINAL)
-    path = root / "reports" / f"{run_date.isoformat()}-export.csv"
+    path = root / "reports" / f"{run_date.isoformat()}-viable.csv"
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)

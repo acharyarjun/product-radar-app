@@ -115,3 +115,61 @@ def register_analyses(
             out[url] = pid
             logger.info("Notion row created for {}", a.product.name[:50])
     return out
+
+
+def _paragraph_block(text: str) -> dict[str, Any]:
+    return {
+        "object": "block",
+        "type": "paragraph",
+        "paragraph": {
+            "rich_text": [{"type": "text", "text": {"content": text[:2000]}}],
+        },
+    }
+
+
+def publish_digest_if_configured(
+    cfg: AppConfig,
+    env: EnvSecrets,
+    run_date: date,
+    analyses: list[ProductAnalysis],
+    *,
+    notion_new_urls: set[str],
+) -> None:
+    """Create a summary child page under digest_parent_page_id when configured."""
+    token = notion_token_resolved(env)
+    parent = (cfg.notion.digest_parent_page_id or "").strip()
+    if not parent or not token:
+        return
+    title_key = cfg.notion.digest_page_title_property.strip() or "title"
+    viable = sum(1 for a in analyses if a.viability == ViabilityStatus.VIABLE)
+    marginal = sum(1 for a in analyses if a.viability == ViabilityStatus.MARGINAL)
+    scanned = len(analyses)
+    lines = [
+        f"Run date: {run_date.isoformat()}",
+        f"Productos escaneados (nuevos en esta pasada): {scanned}",
+        f"Viables: {viable} | Marginales: {marginal}",
+        f"Nuevas filas Notion (esta pasada): {len(notion_new_urls)}",
+        f"Mercado objetivo: {cfg.radar.target_city}, {cfg.radar.target_market}",
+    ]
+    children = [_paragraph_block(t) for t in lines]
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Notion-Version": cfg.notion.notion_version,
+        "Content-Type": "application/json",
+    }
+    page_title = f"Radar summary - {run_date.isoformat()}"
+    body: dict[str, Any] = {
+        "parent": {"page_id": parent},
+        "properties": {
+            title_key: {"title": [{"text": {"content": page_title[:2000]}}]},
+        },
+        "children": children[:99],
+    }
+    try:
+        r = httpx.post(f"{NOTION_API}/pages", headers=headers, json=body, timeout=60.0)
+        if r.status_code >= 400:
+            logger.error("Notion digest page error {}: {}", r.status_code, r.text[:500])
+            return
+        logger.info("Notion digest page created: {}", page_title)
+    except Exception as e:  # noqa: BLE001
+        logger.error("Notion digest failed: {}", e)

@@ -33,6 +33,9 @@ def build_analysis(
     cfg: AppConfig,
     product: Product,
     competitors: list[CompetitorData],
+    *,
+    demand_score: int | None = None,
+    extra_notes: str | None = None,
 ) -> ProductAnalysis:
     from src.analyzers import competition as comp_mod
 
@@ -44,8 +47,11 @@ def build_analysis(
             product.source_price_eur, cfg.radar.min_profit_margin
         )
     est_margin = margin_mod.calculate_margin(product.source_price_eur, avg)
-    demand_raw = google_trends.demand_score_for_product(cfg, product.name)
-    demand = max(1, min(10, demand_raw))
+    if demand_score is not None:
+        demand = max(1, min(10, demand_score))
+    else:
+        demand_raw = google_trends.demand_score_for_product(cfg, product.name)
+        demand = max(1, min(10, demand_raw))
     viability = classify_viability(est_margin, demand, comp_level)
     rec_sale = margin_mod.calculate_recommended_price(
         product.source_price_eur, cfg.radar.min_profit_margin
@@ -55,6 +61,8 @@ def build_analysis(
         f"Target {cfg.radar.target_city}/{cfg.radar.target_market}",
         f"Competitors sampled: {len(competitors)}",
     ]
+    if extra_notes:
+        notes_parts.append(extra_notes)
     return ProductAnalysis(
         product=product,
         competitors=competitors,

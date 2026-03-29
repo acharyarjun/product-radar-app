@@ -1,6 +1,6 @@
 # Product Radar
 
-Daily **market-research agent** for a Bilbao / Spain-focused resale business: discover supplier products (AliExpress, optional Temu), benchmark Amazon.es and Google Trends, score viability, write Markdown + CSV, persist to SQLite, and **register new candidates in a Notion database**.
+Daily **market-research agent** for a Bilbao / Spain-focused resale business: discover supplier products (AliExpress via selectolax/BeautifulSoup, optional Temu), run Google Trends first and **skip Amazon.es scraping** when demand is below `radar.min_demand_score`, then score viability (instructions §6), write Markdown + CSV, persist to SQLite, and **register new candidates in a Notion database**.
 
 The storefront (Shopify or your own site) is separate; Notion is your **review queue** before listing.
 
@@ -9,7 +9,9 @@ The storefront (Shopify or your own site) is separate; Notion is your **review q
 ```bash
 pip install -e ".[dev]"
 copy .env.example .env   # Windows: copy; then edit .env
-python -m src.main
+python -m src.main        # single run (same as --once)
+python -m src.main --once
+python -m src.main --schedule
 ```
 
 Or: `product-radar` (console script from `pyproject.toml`).
@@ -44,6 +46,10 @@ Uses `schedule.daily_run_time` and `schedule.timezone` from `config.yaml`.
 Create properties matching `notion.property_names` in `config.yaml` (defaults: Name, Source, Source URL, prices, Margin pct, Demand, Competition, Viability, Category, Run date, Notes, Pipeline status, Target). Types are documented in [`docs/GITHUB_SECRETS.md`](docs/GITHUB_SECRETS.md).
 
 Enable Notion in `config.yaml` (`notion.enabled: true`) or set `NOTION_ENABLED=true` in GitHub Variables.
+
+Optional **digest page**: set `notion.digest_parent_page_id` to a Notion page UUID and connect your integration to that page. Each run creates a child summary page (`digest_page_title_property` defaults to `title` — match your workspace).
+
+Daily CSV is written as `reports/YYYY-MM-DD-viable.csv` (viable + marginal rows).
 
 ## CI
 

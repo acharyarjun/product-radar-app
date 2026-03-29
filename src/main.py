@@ -14,7 +14,7 @@ from src.git_ops import maybe_git_commit
 from src.models import ViabilityStatus
 from src.reporters import console, csv_export, daily_report, notion_register
 from src.scheduler import run_scheduled_loop
-from src.scrapers import aliexpress, amazon_es, http_utils, temu
+from src.scrapers import aliexpress, amazon_es, google_trends, http_utils, temu
 from src.storage.database import get_session_factory, save_analysis, source_urls_with_notion
 from src.storage.memory import load_memory, mark_run, save_memory, stable_key
 
@@ -50,8 +50,28 @@ def run_pipeline() -> None:
 
         for p in new_products:
             try:
+                demand_raw = google_trends.demand_score_for_product(cfg, p.name)
+                min_d = cfg.radar.min_demand_score
+                if demand_raw < min_d:
+                    an = viability.build_analysis(
+                        cfg,
+                        p,
+                        [],
+                        demand_score=demand_raw,
+                        extra_notes=f"Amazon.es skipped: demand {demand_raw} < min_demand_score {min_d}",
+                    )
+                    analyses.append(an)
+                    save_analysis(sf, an)
+                    mem.seen_source_urls.add(stable_key(p.source_url))
+                    logger.info(
+                        "Low demand for {!r} ({} < {}); skipped competitor scrape",
+                        p.name[:50],
+                        demand_raw,
+                        min_d,
+                    )
+                    continue
                 comps = amazon_es.search_competitors(cfg, client, p.name)
-                an = viability.build_analysis(cfg, p, comps)
+                an = viability.build_analysis(cfg, p, comps, demand_score=demand_raw)
                 analyses.append(an)
                 save_analysis(sf, an)
                 mem.seen_source_urls.add(stable_key(p.source_url))
@@ -73,6 +93,9 @@ def run_pipeline() -> None:
     notion_map = notion_register.register_analyses(
         cfg, env, analyses, run_d, registered_urls
     )
+    notion_register.publish_digest_if_configured(
+        cfg, env, run_d, analyses, notion_new_urls=set(notion_map.keys())
+    )
     for url, page_id in notion_map.items():
         for an in analyses:
             if an.product.source_url == url:
@@ -84,11 +107,18 @@ def run_pipeline() -> None:
     save_memory(memory_path, mem)
 
     msg = f"Daily radar: {run_d.isoformat()} - {viable_n} productos viables"
+    if cfg.git.commit_prefix.strip():
+        msg = f"{cfg.git.commit_prefix.strip()}: {msg}"
     maybe_git_commit(root, cfg, msg)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Product Radar agent")
+    parser.add_argument(
+        "--once",
+        action="store_true",
+        help="Run a single pipeline pass (default if --schedule not set)",
+    )
     parser.add_argument(
         "--schedule",
         action="store_true",

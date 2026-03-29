@@ -83,6 +83,10 @@ class NotionConfig(BaseModel):
     register_marginal: bool = False
     notion_version: str = "2022-06-28"
     digest_parent_page_id: str = ""
+    digest_page_title_property: str = Field(
+        default="title",
+        description="Notion API name for the title property on child pages (often 'title' or 'Title').",
+    )
     property_names: NotionPropertyNames = Field(default_factory=NotionPropertyNames)
 
 

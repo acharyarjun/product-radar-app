@@ -31,3 +31,7 @@ Create a Notion database whose **property names** match `config.yaml` under `not
 - **Run date** — Date  
 
 Connect your integration to the database (**⋯ → Connections**).
+
+## Optional digest page
+
+In `config.yaml`, set `notion.digest_parent_page_id` to a page UUID where summary pages should appear, and ensure the integration can access that page. Use `notion.digest_page_title_property` if Notion expects a different title property name than `title`.

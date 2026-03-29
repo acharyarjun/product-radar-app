@@ -1,4 +1,4 @@
-"""AliExpress listing discovery (httpx + BeautifulSoup)."""
+"""AliExpress listing discovery (httpx + selectolax, BeautifulSoup fallback)."""
 
 from __future__ import annotations
 
@@ -93,6 +93,56 @@ def _listing_url(base_url: str, category_key: str, sort_by: str) -> str:
     return f"{base_url.rstrip('/')}/wholesale?SearchText={q}&sortType={sort}&page=1"
 
 
+def _iter_listings_selectolax(html: str, base: str) -> list[tuple[str, str, str, str | None]]:
+    try:
+        from selectolax.lexbor import LexborHTMLParser
+    except ImportError:
+        return []
+    tree = LexborHTMLParser(html)
+    rows: list[tuple[str, str, str, str | None]] = []
+    for node in tree.css('a[href*="/item/"]'):
+        attrs = node.attributes or {}
+        href = attrs.get("href") or ""
+        if not href:
+            continue
+        full = urljoin(base, href.split("?")[0])
+        title = (attrs.get("title") or "").strip()
+        if not title:
+            title = (node.text(deep=True) or "").strip()
+        parent = node.parent
+        price_text = ""
+        img: str | None = None
+        if parent is not None:
+            price_text = (parent.text(deep=True) or "").strip()[:500]
+            for im in parent.css("img"):
+                src = (im.attributes or {}).get("src")
+                if src:
+                    img = urljoin(base, src)
+                    break
+        rows.append((full, title, price_text, img))
+    return rows
+
+
+def _iter_listings_bs4(html: str, base: str) -> list[tuple[str, str, str, str | None]]:
+    soup = BeautifulSoup(html, "html.parser")
+    rows: list[tuple[str, str, str, str | None]] = []
+    for a in soup.select('a[href*="/item/"]'):
+        href = a.get("href") or ""
+        full = urljoin(base, href.split("?")[0])
+        title = (a.get("title") or a.get_text() or "").strip()
+        parent = a.find_parent(["div", "li", "article"])
+        price_text = ""
+        if parent:
+            price_text = parent.get_text(" ", strip=True)[:500]
+        img = None
+        if parent:
+            im = parent.find("img")
+            if im and im.get("src"):
+                img = urljoin(base, im["src"])
+        rows.append((full, title, price_text, img))
+    return rows
+
+
 def fetch_products_for_categories(
     cfg: AppConfig,
     client: httpx.Client,
@@ -120,22 +170,17 @@ def fetch_products_for_categories(
         except Exception as e:  # noqa: BLE001
             logger.error("AliExpress fetch failed {}: {}", url, e)
             continue
-        soup = BeautifulSoup(r.text, "html.parser")
-        for a in soup.select('a[href*="/item/"]'):
+        rows = _iter_listings_selectolax(r.text, base)
+        if not rows:
+            rows = _iter_listings_bs4(r.text, base)
+        for full, title, price_text, img in rows:
             if len(out) >= cfg.radar.max_products_per_run:
                 break
-            href = a.get("href") or ""
-            full = urljoin(base, href.split("?")[0])
             if full in seen:
                 continue
             seen.add(full)
-            title = (a.get("title") or a.get_text() or "").strip()
             if len(title) < 4:
                 continue
-            parent = a.find_parent(["div", "li", "article"])
-            price_text = ""
-            if parent:
-                price_text = parent.get_text(" ", strip=True)[:500]
             pe = _parse_price_eur(price_text, usd, cny)
             if pe is None:
                 pe = _parse_price_eur(title, usd, cny)
@@ -143,11 +188,6 @@ def fetch_products_for_categories(
                 continue
             if pe > cfg.radar.max_source_price_eur:
                 continue
-            img = None
-            if parent:
-                im = parent.find("img")
-                if im and im.get("src"):
-                    img = urljoin(base, im["src"])
             out.append(
                 Product(
                     name=title[:200],

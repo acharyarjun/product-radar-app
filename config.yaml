@@ -41,6 +41,7 @@ notion:
   register_marginal: false
   notion_version: "2022-06-28"
   digest_parent_page_id: ""
+  digest_page_title_property: "title"
   property_names:
     title: "Name"
     source: "Source"
