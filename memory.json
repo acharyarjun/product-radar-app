@@ -1,5 +1,13 @@
 {
-  "seen_source_urls": [],
-  "last_run": null,
-  "total_runs": 0
+  "seen_source_urls": [
+    "https://www.aliexpress.us/item/3256806824039803.html",
+    "https://www.aliexpress.us/item/3256806824095588.html",
+    "https://www.aliexpress.us/item/3256806984913322.html",
+    "https://www.aliexpress.us/item/3256807448798017.html",
+    "https://www.aliexpress.us/item/3256807958532877.html",
+    "https://www.aliexpress.us/item/3256809179513901.html",
+    "https://www.aliexpress.us/item/3256809395935156.html"
+  ],
+  "last_run": "2026-03-29T12:51:56.969336+00:00",
+  "total_runs": 1
 }
