@@ -1,0 +1,39 @@
+[project]
+name = "product-radar"
+version = "0.1.0"
+description = "Product discovery agent for profitable resale in Spain (Bilbao); registers candidates in Notion"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.27",
+    "beautifulsoup4>=4.12",
+    "selectolax>=0.3",
+    "pandas>=2.2",
+    "pyyaml>=6.0",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "sqlalchemy>=2.0",
+    "gitpython>=3.1",
+    "pytrends>=4.9",
+    "rich>=13.7",
+    "apscheduler>=3.10",
+    "loguru>=0.7",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.3"]
+
+[project.scripts]
+product-radar = "src.main:main"
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

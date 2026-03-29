@@ -1,0 +1,27 @@
+# Product Radar App – Cursor Rules
+
+You are building a **Product Radar Agent**: a Python pipeline that discovers trending products globally (especially from China), analyzes their viability for resale in Spain (focus: Bilbao), and outputs daily reports.
+
+## Tech Stack
+- Python 3.11+
+- `uv` for dependency management (pyproject.toml, NOT requirements.txt)
+- FastAPI for optional dashboard API
+- SQLite via SQLAlchemy for persistent product database
+- APScheduler for daily scheduling
+- Rich for CLI output / reports
+
+## Code Style
+- Type hints everywhere
+- Pydantic models for all data structures
+- Async where possible (httpx, not requests)
+- Modular: one module per concern (scrapers/, analyzers/, reporters/, etc.)
+- Comprehensive logging with `loguru`
+- All config via `config.yaml` loaded with Pydantic Settings
+- Tests with pytest in `tests/`
+
+## Key Constraints
+- Source price must be ≤ 100 €
+- Minimum resale margin ≥ 50%
+- Target market: Spain, specifically Bilbao
+- The agent must run unattended daily (GitHub Actions or local cron)
+- Git auto-commit results after each run
