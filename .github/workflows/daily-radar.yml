@@ -1,12 +1,19 @@
+# Daily market research + optional commit of reports (default branch only for schedule).
+# Manual run: Actions → "Daily Product Radar" → Run workflow
+
 name: Daily Product Radar
 
 on:
+  push:
+    branches: [master]
+    paths:
+      - ".github/workflows/daily-radar.yml"
+      - "src/**"
+      - "pyproject.toml"
+      - "config.yaml"
+  workflow_dispatch:
   schedule:
     - cron: "0 6 * * *"
-  workflow_dispatch:
-
-permissions:
-  contents: write
 
 concurrency:
   group: product-radar-daily
@@ -15,17 +22,23 @@ concurrency:
 jobs:
   radar:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install package
         run: pip install -e ".[dev]"
 
-      - name: Run radar
+      - name: Run Product Radar
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
