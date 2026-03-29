@@ -51,9 +51,15 @@ Optional **digest page**: set `notion.digest_parent_page_id` to a Notion page UU
 
 Daily CSV is written as `reports/YYYY-MM-DD-viable.csv` (viable + marginal rows).
 
-## CI
+## CI (GitHub Actions)
 
-Workflow [`.github/workflows/daily-radar.yml`](.github/workflows/daily-radar.yml) runs daily (06:00 UTC) or on demand. It commits `reports/*.md`, `reports/*.csv`, and `memory.json` when there are changes.
+Open your repo on GitHub → **Actions** → you should see **Daily Product Radar**.
+
+- **Schedule:** every day at **06:00 UTC** (`cron: 0 6 * * *`). Scheduled runs use the **default branch** (`master`).
+- **Manual run:** Actions → Daily Product Radar → **Run workflow**.
+- **On push:** the workflow also runs when you push changes to `master` that touch `src/`, `config.yaml`, `pyproject.toml`, or this workflow file (so the workflow stays visible and validated).
+
+Workflow file: [`.github/workflows/daily-radar.yml`](.github/workflows/daily-radar.yml). It installs the package, runs `python -m src.main`, then commits `reports/*.md`, `reports/*.csv`, and `memory.json` when there are changes.
 
 ## Tests
 
