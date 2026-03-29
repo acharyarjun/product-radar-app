@@ -11,9 +11,9 @@ from src.config import AppConfig
 def demand_score_for_product(cfg: AppConfig, product_name: str) -> int:
     if not cfg.sources.google_trends.enabled:
         return 5
-    city = cfg.radar.target_city
     market = cfg.radar.target_market
-    kw = f"{product_name[:60]} {market}"
+    city = cfg.radar.target_city
+    kw = f"{product_name[:50]} {city} {market}"
     try:
         pytrends = TrendReq(hl="es-ES", tz=360)
         pytrends.build_payload(
