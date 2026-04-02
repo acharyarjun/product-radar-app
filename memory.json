@@ -1,6 +1,7 @@
 {
   "seen_source_urls": [
     "https://www.aliexpress.us/item/3256806240817933.html",
+    "https://www.aliexpress.us/item/3256806437997457.html",
     "https://www.aliexpress.us/item/3256806718414372.html",
     "https://www.aliexpress.us/item/3256806780025690.html",
     "https://www.aliexpress.us/item/3256806781069796.html",
@@ -8,6 +9,7 @@
     "https://www.aliexpress.us/item/3256806808346630.html",
     "https://www.aliexpress.us/item/3256806808813113.html",
     "https://www.aliexpress.us/item/3256806809557447.html",
+    "https://www.aliexpress.us/item/3256806810547468.html",
     "https://www.aliexpress.us/item/3256806823679808.html",
     "https://www.aliexpress.us/item/3256806824039803.html",
     "https://www.aliexpress.us/item/3256806824095588.html",
@@ -21,20 +23,24 @@
     "https://www.aliexpress.us/item/3256807158423163.html",
     "https://www.aliexpress.us/item/3256807158950880.html",
     "https://www.aliexpress.us/item/3256807448798017.html",
+    "https://www.aliexpress.us/item/3256807605357858.html",
     "https://www.aliexpress.us/item/3256807636246678.html",
+    "https://www.aliexpress.us/item/3256807670676157.html",
     "https://www.aliexpress.us/item/3256807670939503.html",
     "https://www.aliexpress.us/item/3256807801574279.html",
     "https://www.aliexpress.us/item/3256807958421061.html",
     "https://www.aliexpress.us/item/3256807958532877.html",
     "https://www.aliexpress.us/item/3256808243784492.html",
     "https://www.aliexpress.us/item/3256808372810471.html",
+    "https://www.aliexpress.us/item/3256808722692542.html",
     "https://www.aliexpress.us/item/3256809179513901.html",
     "https://www.aliexpress.us/item/3256809395935156.html",
     "https://www.aliexpress.us/item/3256809396240427.html",
+    "https://www.aliexpress.us/item/3256809857806571.html",
     "https://www.aliexpress.us/item/3256810205886808.html",
     "https://www.aliexpress.us/item/3256810520429773.html",
     "https://www.aliexpress.us/item/3256811373447096.html"
   ],
-  "last_run": "2026-04-01T06:36:01.754612+00:00",
-  "total_runs": 4
+  "last_run": "2026-04-02T06:27:42.474722+00:00",
+  "total_runs": 5
 }
